@@ -364,7 +364,7 @@ test-cmd: pytest tests
 #  - zzz
 
 ## specify a read-only file (can be used multiple times)
-read: ["README.md", "CONVENTIONS.md", ".env.local"]
+read: ["README.md", "CONVENTIONS.md", ".env"]
 
 ## Specify multiple values like this:
 #read:

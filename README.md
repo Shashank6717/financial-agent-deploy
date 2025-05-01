@@ -101,6 +101,13 @@ Add the following JSON to the `tools` array, note modify the path to suite your 
    ]
  }
 ```
+## Using with Stock Market Client
+
+To use the MCP server with the Stock Market Client, follow these steps:
+
+1. You will need an Anthropic API key. You can get one for free at [Anthropic](https://console.anthropic.com/signup).
+2. Update the _.env_ file with your API key. ```ANTHROPIC_API_KEY=your_api_key_here```
+3. Start the MCP Client with the following command: ```uv run stock_market_client.py ```
 
 
 ## Available Tools
@@ -123,7 +130,7 @@ The server includes these pre-built prompts:
 - `stock_price_history`: Analyze historical price movements
 - `company_news_analysis`: Analyze news and its impact on stock price
 
-## Example Usage with Claude
+## Example Usage Prompts
 
 Here are some examples of how to use the tools with Claude:
 

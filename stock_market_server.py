@@ -6,8 +6,8 @@ from mcp.server.fastmcp import FastMCP
 import time
 from datetime import datetime
 
-# Load environment variables from .env.local                                                                                                               
-load_dotenv('.env.local')
+# Load environment variables from .env
+load_dotenv()
 
 # Initialize FastMCP server                                                                                                                                
 mcp = FastMCP("stock-market")

@@ -1,5 +1,6 @@
 mcp
 httpx
 finnhub-python
+anthropic
 python-dotenv
 pytest
