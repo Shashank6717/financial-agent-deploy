@@ -33,18 +33,7 @@ async def lifespan(app: FastAPI):
     # 1. Start stock market MCP server
     mcp_managers.append(MCPToolManager(server_script="./stock_market_server.py"))
     
-    # 2. Start Alpha Vantage MCP server (if API KEY is present)
-    # av_api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
-    # if av_api_key:
-    #     mcp_managers.append(MCPToolManager(
-    #         command="uvx",
-    #         args=["--from", "marketdata-mcp-server", "marketdata-mcp", av_api_key]
-    #     ))
-    # else:
-    #     print("⚠️ ALPHA_VANTAGE_API_KEY not found. Skipping Alpha Vantage tools.")
-        
-    # for mgr in mcp_managers:
-    #     await mgr.__aenter__()
+    # 2. Start Alpha Vantage MCP server (local script)
     av_api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
     if av_api_key:
         mcp_managers.append(MCPToolManager(server_script="./alpha_server.py"))

@@ -59,13 +59,20 @@ def _build_args_schema(model_name: str, json_schema: dict) -> type[BaseModel]:
         python_type: type = _JSON_TO_PYTHON.get(raw_type, str)
         description: str = field_schema.get("description", "")
 
+        # Pick a type-appropriate default so we never expose Optional/null
+        # to Groq (which rejects null in tool-call arguments).
+        _TYPE_DEFAULTS: dict[type, Any] = {
+            str: "", int: 0, float: 0.0, bool: False, list: [], dict: {},
+        }
+
         if field_name in required_set:
             # Only include required fields — the LLM MUST fill these
             fields[field_name] = (python_type, Field(..., description=description))
-        # Optional fields are intentionally skipped:
-        # If included with Optional/None, Groq rejects the call when the LLM
-        # generates `null`. Omitting them prevents that entirely; the MCP
-        # server handles its own defaults.
+        else:
+            # Re-include optional fields with safe defaults (not None) 
+            # so Groq accepts the call but the LLM still knows they exist.
+            default = field_schema.get("default", _TYPE_DEFAULTS.get(python_type, None))
+            fields[field_name] = (python_type, Field(default, description=description))
 
     return create_model(model_name, **fields)
 
