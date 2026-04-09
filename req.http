@@ -23,7 +23,7 @@ POST http://localhost:8000/api/news
 Content-Type: application/json
 
 {
-  "query": "Give me the top crypto headlines today.",
+  "query": "hello, i am shashank who are you?",
   "reset": true
 }
 

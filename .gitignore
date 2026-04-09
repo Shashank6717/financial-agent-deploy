@@ -189,7 +189,12 @@ metropolis-deployment/charts/*.tgz
 .aider*
 !.aider.conf.yml
 
+.qoder
+
+.venv
 
 scratch/
 yolo/
+
+archive/
 
