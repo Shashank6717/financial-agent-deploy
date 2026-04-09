@@ -36,10 +36,7 @@ async def lifespan(app: FastAPI):
     # 2. Start Alpha Vantage MCP server (if API KEY is present)
     av_api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
     if av_api_key:
-        mcp_managers.append(MCPToolManager(
-            command="marketdata-mcp",
-            args=[av_api_key]
-        ))
+        mcp_managers.append(MCPToolManager(server_script="./alpha_vantage_server.py"))
     else:
         print("⚠️ ALPHA_VANTAGE_API_KEY not found. Skipping Alpha Vantage tools.")
         
@@ -47,17 +44,9 @@ async def lifespan(app: FastAPI):
         try:
             await mgr.__aenter__()
         except Exception as e:
-            # Fallback for when an MCP server fails (e.g. uvx not found on Render)
             name = mgr.server_script or (mgr.command if hasattr(mgr, 'command') else 'MCP')
             print(f"⚠️ Warning: MCP manager {name} failed to start: {e}")
-            # Keep the error but don't crash. The agent will just have fewer tools.
 
-    # 3. Verify core environment variables
-    required_vars = ["FINNHUB_API_KEY", "GROQ_API_KEY"]
-    for var in required_vars:
-        if not os.getenv(var):
-            print(f"❌ CRITICAL ERROR: {var} environment variable is not set!")
-    
     agent = FinancialAgent(mcp_managers)
     print(f"✅ Application is fully ready. Total tools loaded: {len(agent.tools)}")
     
@@ -93,7 +82,4 @@ async def health():
     return {"status": "ok"}
 
 if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    print(f"🚀 Starting server on port {port}...")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
