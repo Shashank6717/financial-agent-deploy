@@ -60,9 +60,12 @@ def _build_args_schema(model_name: str, json_schema: dict) -> type[BaseModel]:
         description: str = field_schema.get("description", "")
 
         if field_name in required_set:
+            # Only include required fields — the LLM MUST fill these
             fields[field_name] = (python_type, Field(..., description=description))
-        else:
-            fields[field_name] = (Optional[python_type], Field(None, description=description))
+        # Optional fields are intentionally skipped:
+        # If included with Optional/None, Groq rejects the call when the LLM
+        # generates `null`. Omitting them prevents that entirely; the MCP
+        # server handles its own defaults.
 
     return create_model(model_name, **fields)
 
