@@ -46,6 +46,12 @@ async def lifespan(app: FastAPI):
     for mgr in mcp_managers:
         await mgr.__aenter__()
 
+    # 3. Verify core environment variables
+    required_vars = ["FINNHUB_API_KEY", "GROQ_API_KEY"]
+    for var in required_vars:
+        if not os.getenv(var):
+            print(f"❌ CRITICAL ERROR: {var} environment variable is not set!")
+    
     agent = FinancialAgent(mcp_managers)
     print(f"✅ Application is fully ready. Total tools loaded: {len(agent.tools)}")
     
@@ -81,4 +87,7 @@ async def health():
     return {"status": "ok"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    print(f"🚀 Starting server on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port)
