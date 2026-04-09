@@ -109,6 +109,31 @@ To use the MCP server with the Stock Market Client, follow these steps:
 2. Update the _.env_ file with your API key. ```ANTHROPIC_API_KEY=your_api_key_here```
 3. Start the MCP Client with the following command: ```uv run stock_market_client.py ```
 
+## News Agent (Top 5 Relevant News)
+
+This project now includes a focused news agent that:
+- Pulls company or market news from the MCP server
+- Scrapes the original article URLs
+- Ranks relevance to the user's query
+- Summarizes the top 5 most relevant items, tailored to the query
+
+Run it with:
+
+```bash
+uv run news_agent_client.py
+```
+
+## LangGraph + LangChain News Chat
+
+This version uses LangGraph to orchestrate planning, tool calls, scraping, summarization,
+and question answering. It returns structured JSON with an answer plus top 5 news items.
+
+Run it with:
+
+```bash
+uv run langgraph_news_agent.py
+```
+
 
 ## Available Tools
 
@@ -120,6 +145,7 @@ The MCP server provides the following tools:
 - `get_market_news`: Get the latest market news by category
 - `get_company_news`: Get news for a specific company over a date range
 - `get_stock_candles`: Get historical price data for a stock
+- `scrape_article`: Scrape a news article URL and extract the main text
 
 ## Available Prompts
 

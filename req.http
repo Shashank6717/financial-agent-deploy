@@ -1,0 +1,29 @@
+### Health check
+GET http://localhost:8000/health
+
+### News query (stateless)
+POST http://localhost:8000/api/news
+Content-Type: application/json
+
+{
+  "query": "Summarize the latest market news regarding the rupee falling against dollar and also currency exchange rate of dollar and rupee.",
+  "reset": true
+}
+
+### Company-specific query (keeps conversation history)
+POST http://localhost:8000/api/news
+Content-Type: application/json
+
+{
+  "query": "which country is going to suffer the most in isreal-US-iran conflict?"
+}
+
+### Clear history and ask a follow-up
+POST http://localhost:8000/api/news
+Content-Type: application/json
+
+{
+  "query": "Give me the top crypto headlines today.",
+  "reset": true
+}
+

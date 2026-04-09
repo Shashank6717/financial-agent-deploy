@@ -1,10 +1,15 @@
 import os
 import finnhub
 import json  # This is a built-in module, no need to add to requirements.txt
-from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
 import time
 from datetime import datetime
+from urllib.parse import urlparse
+
+import httpx
+from bs4 import BeautifulSoup
+from readability import Document
+from dotenv import load_dotenv
+from mcp.server.fastmcp import FastMCP
 
 # Load environment variables from .env
 load_dotenv()
@@ -18,6 +23,34 @@ if not api_key:
     raise ValueError("FINNHUB_API_KEY environment variable not set")
 
 finnhub_client = finnhub.Client(api_key=api_key)
+
+MAX_ARTICLE_CHARS = 12000
+
+def _extract_readable_text(html: str) -> tuple[str, str]:
+    """Extract the main text and title from an HTML document."""
+    title = ""
+    text = ""
+    try:
+        doc = Document(html)
+        title = doc.short_title() or ""
+        readable_html = doc.summary()
+        soup = BeautifulSoup(readable_html, "lxml")
+        text = soup.get_text(separator="\n")
+    except Exception:
+        # Fallback to raw HTML if readability fails
+        soup = BeautifulSoup(html, "lxml")
+        if soup.title and soup.title.string:
+            title = soup.title.string.strip()
+        text = soup.get_text(separator="\n")
+
+    # Normalize whitespace and trim
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    text = "\n".join(lines)
+
+    if len(text) > MAX_ARTICLE_CHARS:
+        text = text[:MAX_ARTICLE_CHARS].rstrip() + "..."
+
+    return title, text
 
 @mcp.tool()
 def get_stock_symbol_lookup(query: str) -> str:
@@ -355,6 +388,56 @@ def get_stock_candles(symbol: str, resolution: str = "D", from_time: str = None,
 
     except Exception as e:
         return f"Error getting stock candles: {str(e)}"
+
+@mcp.tool()
+def scrape_article(url: str, timeout_s: int = 15) -> str:
+    """
+    Scrape a news article URL and return extracted text content.
+
+    Args:
+        url: The article URL to scrape (http/https).
+        timeout_s: Request timeout in seconds.
+
+    Returns:
+        str: JSON payload with title and extracted text.
+    """
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            return "Invalid URL scheme. Only http/https are supported."
+
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/121.0.0.0 Safari/537.36"
+            )
+        }
+
+        with httpx.Client(timeout=timeout_s, follow_redirects=True, headers=headers) as client:
+            response = client.get(url)
+            response.raise_for_status()
+
+        content_type = response.headers.get("content-type", "")
+        if "text/html" not in content_type:
+            return "URL did not return HTML content."
+
+        title, text = _extract_readable_text(response.text)
+
+        payload = {
+            "url": url,
+            "title": title,
+            "text": text,
+            "content_length": len(text),
+            "truncated": len(text) >= MAX_ARTICLE_CHARS,
+        }
+
+        return json.dumps(payload, indent=2)
+
+    except httpx.HTTPError as e:
+        return f"HTTP error scraping article: {str(e)}"
+    except Exception as e:
+        return f"Error scraping article: {str(e)}"
 
 @mcp.prompt("stock_analysis")
 def stock_analysis_prompt():

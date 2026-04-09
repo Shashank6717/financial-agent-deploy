@@ -4,3 +4,14 @@ finnhub-python
 anthropic
 python-dotenv
 pytest
+beautifulsoup4
+readability-lxml
+lxml
+google-genai
+pydantic
+langchain-core
+langchain-google-genai
+langchain-anthropic
+langgraph
+fastapi
+uvicorn
