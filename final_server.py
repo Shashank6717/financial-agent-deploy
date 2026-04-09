@@ -37,8 +37,8 @@ async def lifespan(app: FastAPI):
     av_api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
     if av_api_key:
         mcp_managers.append(MCPToolManager(
-            command="uvx",
-            args=["--from", "marketdata-mcp-server", "marketdata-mcp", av_api_key]
+            command="marketdata-mcp",
+            args=[av_api_key]
         ))
     else:
         print("⚠️ ALPHA_VANTAGE_API_KEY not found. Skipping Alpha Vantage tools.")
