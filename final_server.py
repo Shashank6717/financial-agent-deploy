@@ -44,7 +44,13 @@ async def lifespan(app: FastAPI):
         print("⚠️ ALPHA_VANTAGE_API_KEY not found. Skipping Alpha Vantage tools.")
         
     for mgr in mcp_managers:
-        await mgr.__aenter__()
+        try:
+            await mgr.__aenter__()
+        except Exception as e:
+            # Fallback for when an MCP server fails (e.g. uvx not found on Render)
+            name = mgr.server_script or (mgr.command if hasattr(mgr, 'command') else 'MCP')
+            print(f"⚠️ Warning: MCP manager {name} failed to start: {e}")
+            # Keep the error but don't crash. The agent will just have fewer tools.
 
     # 3. Verify core environment variables
     required_vars = ["FINNHUB_API_KEY", "GROQ_API_KEY"]
