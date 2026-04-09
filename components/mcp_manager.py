@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 from contextlib import AsyncExitStack
 
@@ -33,11 +34,15 @@ class MCPToolManager:
         await self._exit_stack.aclose()
 
     async def _connect(self) -> None:
+        # On platforms like Render, we MUST pass os.environ so subprocesses (like the stock server)
+        # can access the API keys set in the dashboard.
+        env = os.environ.copy()
+
         if self.server_script:
             cmd = "python" if self.server_script.endswith(".py") else "node"
-            params = StdioServerParameters(command=cmd, args=[self.server_script], env=None)
+            params = StdioServerParameters(command=cmd, args=[self.server_script], env=env)
         else:
-            params = StdioServerParameters(command=self.command, args=self.args, env=None)
+            params = StdioServerParameters(command=self.command, args=self.args, env=env)
 
         transport = await self._exit_stack.enter_async_context(stdio_client(params))
         stdio, write = transport
